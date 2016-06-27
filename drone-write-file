@@ -1,41 +1,48 @@
 #!/bin/bash
 
 function CreateNodeFile {
-  CREATENODEFILE_BODY=$(eval echo $1)
-  CREATENODEFILE_OUT=$(eval echo $2)
+  body=$(eval echo $1)
+  scriptFile=$(eval echo $2)
 
   # The following replacements maintain the punctuation
-  # replace "$" with "\\\$"
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\$/\\\\\\\$}
   # replace "`" with "\\\`"
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\`/\\\\\\\`}
+  body=${body//\`/\\\\\\\`}
   # replace "'" with "\\\'"
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\'/\\\\\\\'}
+  body=${body//\'/\\\\\\\'}
   # replace '"' with '\\"'
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\"/\\\\\\\"}
+  body=${body//\"/\\\\\\\"}
   # replace "\\n" with "\\\\n"
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\n/\\\\n}
+  body=${body//\\n/\\\\n}
 
   # replace end of lines with \n
-  CREATENODEFILE_BODY=$(eval echo \"$CREATENODEFILE_BODY\" | sed 's/$/DRONE_WRITE_FILE_EOL/')
+  body=$(eval echo \"$body\" | sed 's/$/DRONE_WRITE_FILE_EOL/')
 
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\$/\$}
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\`/\`}
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\'/\'}
-  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\"/\"}
+  body=${body//\\\`/\`}
+  body=${body//\\\'/\'}
+  body=${body//\\\"/\"}
   echo 'module.exports = ' \
-    $(echo $CREATENODEFILE_BODY \
+    $(echo $body \
       | sed 's/DRONE_WRITE_FILE_EOL/\\n/g' \
       | sed 's/\\n$//') \
-    > $CREATENODEFILE_OUT
+    > $scriptFile
 }
 
 # Strange syntax preserves spaces
 CreateNodeFile "\${PLUGIN_IF}" "/node/plugin-if.js"
 CreateNodeFile "\${PLUGIN_BODY}" "/node/plugin-body.js"
 
+if [ -z $PLUGIN_DEBUG ]
+then
+echo "/node/plugin-if.js"
+echo ""
+cat /node/plugin-if.js
+echo ""
+echo "/node/plugin-body.js"
+cat /node/plugin-body.js
+fi
+
 # Remove if exists, ignore errors
-rm $PLUGIN_OUT || true
+rm $PLUGIN_OUT 2> /dev/null
 # Create directories if not exists, ignore errors
 mkdir -p $(dirname $PLUGIN_OUT) || true
 
