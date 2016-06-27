@@ -1,17 +1,38 @@
-#!/bin/sh
+#!/bin/bash
 
-echo DRONE_WRITE_FILE
-# replace "`" with "\`"
-PLUGIN_IF=${PLUGIN_IF//\`/\\\`}
-eval echo 'module.exports = '$(echo \"$PLUGIN_IF\") > /node/plugin-if.js
+function CreateNodeFile {
+  CREATENODEFILE_BODY=$(eval echo $1)
+  CREATENODEFILE_OUT=$(eval echo $2)
 
-# replace "`" with "\\\`"
-PLUGIN_BODY=${PLUGIN_BODY//\`/\\\\\\\`}
-# replace "\\n" with "\\\\n"
-PLUGIN_BODY=${PLUGIN_BODY//\\n/\\\\n}
-# replace end of lines with \n
-PLUGIN_BODY=$(eval echo \"$PLUGIN_BODY\" | sed 's/$/\\n/')
-echo 'module.exports = `'$PLUGIN_BODY'`' > /node/plugin-body.js
+  # The following replacements maintain the punctuation
+  # replace "$" with "\\\$"
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\$/\\\\\\\$}
+  # replace "`" with "\\\`"
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\`/\\\\\\\`}
+  # replace "'" with "\\\'"
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\'/\\\\\\\'}
+  # replace '"' with '\\"'
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\"/\\\\\\\"}
+  # replace "\\n" with "\\\\n"
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\n/\\\\n}
+
+  # replace end of lines with \n
+  CREATENODEFILE_BODY=$(eval echo \"$CREATENODEFILE_BODY\" | sed 's/$/DRONE_WRITE_FILE_EOL/')
+
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\$/\$}
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\`/\`}
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\'/\'}
+  CREATENODEFILE_BODY=${CREATENODEFILE_BODY//\\\"/\"}
+  echo 'module.exports = ' \
+    $(echo $CREATENODEFILE_BODY \
+      | sed 's/DRONE_WRITE_FILE_EOL/\\n/g' \
+      | sed 's/\\n$//') \
+    > $CREATENODEFILE_OUT
+}
+
+# Strange syntax preserves spaces
+CreateNodeFile "\${PLUGIN_IF}" "/node/plugin-if.js"
+CreateNodeFile "\${PLUGIN_BODY}" "/node/plugin-body.js"
 
 # Remove if exists, ignore errors
 rm $PLUGIN_OUT || true

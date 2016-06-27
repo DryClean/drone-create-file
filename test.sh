@@ -1,14 +1,11 @@
 git clone https://github.com/ZombieHippie/fantastic-repository
 cd fantastic-repository
 git checkout feature/test-feature
+git clean -f
 
 PLUGIN_OUT='drone-comments/linting'
 PLUGIN_IF='/\w+/.test(`$(cat reports/tslint-prose.txt)`)'
-PLUGIN_BODY='**Linting Errors Found**\n```txt\n$(cat reports/tslint-prose.txt)\n```'
-
-echo $PLUGIN_BODY
-export PLUGIN_BODY=$PLUGIN_BODY
-
+PLUGIN_BODY='"**Linting Errors Found**\n```txt\n$(cat reports/tslint-prose.txt)\n```"'
 
 docker run --rm                \
 	 -e PLUGIN_OUT=$PLUGIN_OUT   \
@@ -19,4 +16,3 @@ docker run --rm                \
 	 dryclean/drone-write-file
 
 cd ..
-

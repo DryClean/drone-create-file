@@ -4,6 +4,7 @@ RUN apk update && \
   apk add \
     ca-certificates \
     git \
+    bash \
     nodejs && \
   rm -rf \
     /var/cache/apk/*
@@ -16,4 +17,3 @@ ADD run.js /node/
 RUN chmod +x /node/drone-write-file
 
 ENTRYPOINT ["/node/drone-write-file"]
-
