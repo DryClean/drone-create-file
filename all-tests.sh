@@ -1,5 +1,3 @@
-
-
 function RunTests {
 	docker run --rm             \
 		--env-file $(ls ./*.env)  \
@@ -8,8 +6,9 @@ function RunTests {
 		-w $(pwd)                 \
 		dryclean/drone-write-file
 
-
-	diff *.expected *.out
+	if [ -f *.expected ] && [ -f ./**/*.out ]; then
+		diff *.expected ./**/*.out
+	fi
 }
 
 PREV_WORKING_DIR=$(pwd)
@@ -19,8 +18,11 @@ echo "======"
 for FOLDER in $(ls -d tests/*/)
 do
 	cd $FOLDER
-	echo "## Test:" $FOLDER
-	rm $(ls ./*.out) > /dev/null
+	echo -e "## Test\e[1m" $FOLDER "\e[0m"
+	if [ -f ./**/*.out ]; then
+		rm "$(ls ./**/*.out)" > /dev/null
+	fi
 	RunTests
+	echo -e "\e[92mdone\e[0m."
 	cd $PREV_WORKING_DIR
 done

@@ -9,8 +9,6 @@ function CreateNodeFile {
   body=${body//\`/\\\`}
   # replace "'" with "\\\'"
   body=${body//\'/\\\'}
-  # replace '"' with '\\"'
-  body=${body//\"/\\\"}
   # replace "\\n" with "\\\\n"
   body=${body//\\n/\\\\n}
 
@@ -19,7 +17,6 @@ function CreateNodeFile {
 
   body=${body//\\\`/\`}
   body=${body//\\\'/\'}
-  body=${body//\\\"/\"}
   echo 'module.exports = ' \
     "$(echo "$body" \
       | sed 's/DRONE_WRITE_FILE_EOL/\\n/g' \
@@ -31,20 +28,17 @@ function CreateNodeFile {
 CreateNodeFile "\${PLUGIN_IF}" "/node/plugin-if.js"
 CreateNodeFile "\${PLUGIN_BODY}" "/node/plugin-body.js"
 
-if [ -z "$PLUGIN_DEBUG" ]; then
-  echo "/node/plugin-if.js"
-  echo ""
-  cat /node/plugin-if.js
-  echo ""
-  echo "/node/plugin-body.js"
-  echo ""
-  cat /node/plugin-body.js
-  echo ""
-fi
-
 # Remove if exists, ignore errors
 rm "$PLUGIN_OUT" 2> /dev/null
 # Create directories if not exists, ignore errors
 mkdir -p "$(dirname "$PLUGIN_OUT")"
 
 node /node/run.js > "$PLUGIN_OUT"
+if [ -e "$PLUGIN_OUT" ]; then
+  if [ -s "$PLUGIN_OUT" ]; then
+    echo -e "\e[92mCreated file: \e[0m$PLUGIN_OUT"
+  else
+    rm "$PLUGIN_OUT"
+    echo -e "\e[93mNo file created.\e[0m"
+  fi
+fi
