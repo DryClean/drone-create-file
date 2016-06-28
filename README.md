@@ -25,10 +25,12 @@ pipeline:
 
 ## Options
 
-`PLUGIN_IF`: Bash first JavaScript
-`PLUGIN_BODY`: Bash first JavaScript
-`PLUGIN_OUT`: String
+`PLUGIN_IF`: **Bash first JavaScript**
 
-> Bash first JavaScript allows only graves (`\``) and single quotes (`'`) during evaluation, while double quotes (`"`) can be used by Bash.
+`PLUGIN_BODY`: **Bash first JavaScript**
+
+`PLUGIN_OUT`: **String**
+
+> Bash first JavaScript allows only graves (backtick) and single quotes (`'`) during evaluation, while double quotes (`"`) can be used by Bash.
 
 Though documentation is low, peruse the [tests/](./tests/) folder for some examples. 
