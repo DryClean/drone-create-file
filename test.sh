@@ -1,18 +1,28 @@
-git clone https://github.com/ZombieHippie/fantastic-repository
-cd fantastic-repository
-git checkout feature/test-feature
-git clean -f
+function RunTests {
+	docker run --rm             \
+		--env-file $(ls ./*.env)  \
+		-e PLUGIN_DEBUG=1					\
+		-v $(pwd):$(pwd)          \
+		-w $(pwd)                 \
+		dryclean/drone-write-file
 
-PLUGIN_OUT='drone-comments/linting'
-PLUGIN_IF='/\w+/.test(`$(cat reports/tslint-prose.txt)`)'
-PLUGIN_BODY='"**Linting Errors Found**\n```txt\n$(cat reports/tslint-prose.txt)\n```"'
+	if [ -f *.expected ] && [ -f ./**/*.out ]; then
+		diff *.expected ./**/*.out
+	fi
+}
 
-docker run --rm                \
-	 -e PLUGIN_OUT=$PLUGIN_OUT   \
-	 -e PLUGIN_IF=$PLUGIN_IF     \
-	 -e PLUGIN_BODY=$PLUGIN_BODY \
-	 -v $(pwd):$(pwd)            \
-	 -w $(pwd)                   \
-	 dryclean/drone-write-file
+PREV_WORKING_DIR=$(pwd)
+echo "All Tests"
+echo "======"
 
-cd ..
+for FOLDER in $(ls -d tests/*/)
+do
+	cd $FOLDER
+	echo -e "## Test\e[1m" $FOLDER "\e[0m"
+	if [ -f ./**/*.out ]; then
+		rm "$(ls ./**/*.out)" > /dev/null
+	fi
+	RunTests
+	echo -e "\e[92mdone\e[0m."
+	cd $PREV_WORKING_DIR
+done

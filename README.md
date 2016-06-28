@@ -17,8 +17,18 @@ pipeline:
     # eval echo 'module.exports = '$(echo \"$PLUGIN_IF\") > plugin-if.js
     out: "drone-comments/linting"
     body: |
-      **Linting Errors Found**
-      ```
+      `**Linting Errors Found**
+      \`\`\`
       $(cat reports/lint.txt)
-      ```
+      \`\`\``
 ```
+
+## Options
+
+`PLUGIN_IF`: Bash first JavaScript
+`PLUGIN_BODY`: Bash first JavaScript
+`PLUGIN_OUT`: String
+
+> Bash first JavaScript allows only graves (`\``) and single quotes (`'`) during evaluation, while double quotes (`"`) can be used by Bash.
+
+Though documentation is low, peruse the [tests/](./tests/) folder for some examples. 
