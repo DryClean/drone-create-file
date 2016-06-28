@@ -6,8 +6,14 @@ function RunTests {
 		-w $(pwd)                 \
 		dryclean/drone-write-file
 
-	if [ -f *.expected ] && [ -f ./**/*.out ]; then
-		diff *.expected ./**/*.out
+	if [ -f *.expected ]; then
+		if [ -f ./**/*.out ]; then
+			diff *.expected ./**/*.out
+		else
+			echo -e "\e[91mError: Expected out file to be created\e[0m."
+		fi
+	elif [ -f ./**/*.out ]; then
+		echo -e "\e[91mError: Out file found\e[0m."
 	fi
 }
 
